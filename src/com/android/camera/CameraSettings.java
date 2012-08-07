@@ -28,7 +28,10 @@ import android.util.FloatMath;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  *  Provides utilities and keys for Camera settings.
@@ -53,6 +56,9 @@ public class CameraSettings {
     public static final String KEY_CAMERA_ID = "pref_camera_id_key";
     public static final String KEY_CAMERA_FIRST_USE_HINT_SHOWN = "pref_camera_first_use_hint_shown_key";
     public static final String KEY_VIDEO_FIRST_USE_HINT_SHOWN = "pref_video_first_use_hint_shown_key";
+    public static final String KEY_POWER_SHUTTER = "pref_power_shutter";
+    public static final String KEY_ZSL = "pref_camera_zsl_key";
+    public static final String KEY_ISO = "pref_camera_iso_key";
 
     public static final String EXPOSURE_DEFAULT_VALUE = "0";
 
@@ -62,6 +68,8 @@ public class CameraSettings {
     public static final int DEFAULT_VIDEO_DURATION = 0; // no limit
 
     private static final String TAG = "CameraSettings";
+    public static final String VALUE_ON = "on";
+    public static final String VALUE_OFF = "off";
 
     private final Context mContext;
     private final Parameters mParameters;
@@ -147,6 +155,7 @@ public class CameraSettings {
         ListPreference videoFlashMode =
                 group.findPreference(KEY_VIDEOCAMERA_FLASH_MODE);
         ListPreference videoEffect = group.findPreference(KEY_VIDEO_EFFECT);
+        ListPreference iso = group.findPreference(KEY_ISO);
 
         // Since the screen could be loaded from different resources, we need
         // to check if the preference is available here
@@ -171,11 +180,13 @@ public class CameraSettings {
                     flashMode, mParameters.getSupportedFlashModes());
         }
         if (focusMode != null) {
-            if (mParameters.getMaxNumFocusAreas() == 0) {
+            boolean wantsFocus = mContext.getResources().getBoolean(R.bool.wantsFocusModes)
+                || Util.useSamsungCamSettings();
+            if (mParameters.getMaxNumFocusAreas() == 0 || wantsFocus) {
                 filterUnsupportedOptions(group,
                         focusMode, mParameters.getSupportedFocusModes());
             } else {
-                // Remove the focus mode if we can use tap-to-focus.
+                // Remove the focus mode if we can use tap-to-focus
                 removePreference(group, focusMode.getKey());
             }
         }
@@ -190,6 +201,10 @@ public class CameraSettings {
         if (videoEffect != null) {
             initVideoEffect(group, videoEffect);
             resetIfInvalid(videoEffect);
+        }
+        if (iso != null) {
+            filterUnsupportedOptions(group,
+                    iso, mParameters.getSupportedIsoValues());
         }
     }
 
@@ -347,7 +362,7 @@ public class CameraSettings {
         if (version == 2) {
             editor.putString(KEY_RECORD_LOCATION,
                     pref.getBoolean(KEY_RECORD_LOCATION, false)
-                    ? RecordLocationPreference.VALUE_ON
+                    ? CameraSettings.VALUE_ON
                     : RecordLocationPreference.VALUE_NONE);
             version = 3;
         }
@@ -495,6 +510,34 @@ public class CameraSettings {
         return supported;
     }
 
+
+    /**
+     * Enable video mode for certain cameras.
+     *
+     * @param params
+     * @param on
+     */
+    public static void setVideoMode(Parameters params, boolean on) {
+        if (Util.useSamsungCamMode()) {
+            params.set("cam_mode", on ? "1" : "0");
+        }
+        if (Util.useHTCCamMode()) {
+            params.set("cam-mode", on ? "1" : "0");
+        }
+    }
+
+    /**
+     * Set video size for certain cameras.
+     *
+     * @param params
+     * @param profile
+     */
+    public static void setEarlyVideoSize(Parameters params, CamcorderProfile profile) {
+        if (Util.needsEarlyVideoSize()) {
+            params.set("video-size", profile.videoFrameWidth + "x" + profile.videoFrameHeight);
+        }
+    }
+
     private void initVideoEffect(PreferenceGroup group, ListPreference videoEffect) {
         CharSequence[] values = videoEffect.getEntryValues();
 
@@ -514,5 +557,11 @@ public class CameraSettings {
         }
 
         filterUnsupportedOptions(group, videoEffect, supported);
+    }
+
+    public static void dumpParameters(Parameters params) {
+        Set<String> sortedParams = new TreeSet<String>();
+        sortedParams.addAll(Arrays.asList(params.flatten().split(";")));
+        Log.d(TAG, "Parameters: " + sortedParams.toString());
     }
 }

@@ -50,13 +50,6 @@
     <string name="pref_camera_settings_category" msgid="2576236450859613120">"Configurações da câmera"</string>
     <string name="pref_camcorder_settings_category" msgid="460313486231965141">"Configurações da filmadora"</string>
     <string name="pref_camera_picturesize_title" msgid="4333724936665883006">"Tamanho da imagem"</string>
-    <string name="pref_camera_picturesize_entry_2592x1936" msgid="6980117304679164339">"5 megapixels"</string>
-    <string name="pref_camera_picturesize_entry_2048x1536" msgid="4391030755438075447">"3 megapixels"</string>
-    <string name="pref_camera_picturesize_entry_1600x1200" msgid="8081839485457681369">"2 megapixels"</string>
-    <string name="pref_camera_picturesize_entry_1280x960" msgid="7820672028447972964">"1,3 megapixels"</string>
-    <string name="pref_camera_picturesize_entry_1024x768" msgid="3705686683403524018">"1 megapixel"</string>
-    <string name="pref_camera_picturesize_entry_640x480" msgid="5557572917973022995">"VGA"</string>
-    <string name="pref_camera_picturesize_entry_320x240" msgid="5729711026478753025">"QVGA"</string>
     <string name="pref_camera_focusmode_title" msgid="2877248921829329127">"Modo de foco"</string>
     <string name="pref_camera_focusmode_entry_auto" msgid="7374820710300362457">"Automático"</string>
     <string name="pref_camera_focusmode_entry_infinity" msgid="3413922419264967552">"Infinito"</string>
@@ -128,4 +121,13 @@
     <string name="accessibility_switch_to_camera" msgid="5951340774212969461">"Alternar para foto"</string>
     <string name="accessibility_switch_to_video" msgid="4991396355234561505">"Alternar para vídeo"</string>
     <string name="accessibility_switch_to_panorama" msgid="604756878371875836">"Alterar para panorama"</string>
+    <string name="pref_camera_focusmode_entry_fixed">Fixo</string>
+    <string name="pref_camera_focusmode_entry_facedetect">Detectar face</string>
+    <string name="pref_camera_focusmode_entry_continuouspicture">Foto Contínua</string>
+    <string name="pref_camera_whitebalance_entry_cloudydaylight">Nublado-Luz do dia</string>
+    <string name="pref_camera_scenemode_entry_backlight">Luz de fundo</string>
+    <string name="pref_camera_scenemode_entry_duskdawn">Anoitecer/Amanhecer</string>
+    <string name="pref_camera_scenemode_entry_fallcolor">Tom de Outono</string>
+    <string name="pref_camera_scenemode_entry_text">Texto</string>
+    <string name="pref_camera_power_shutter_title">Tirar c/ botão Liga/Desl.</string>
 </resources>

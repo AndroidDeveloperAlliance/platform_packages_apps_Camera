@@ -331,7 +331,7 @@ public class VideoCamera extends ActivityBase
         mPreferences = new ComboPreferences(this);
         CameraSettings.upgradeGlobalPreferences(mPreferences.getGlobal());
         mCameraId = getPreferredCameraId(mPreferences);
-
+        powerShutter(mPreferences);
         mPreferences.setLocalId(this, mCameraId);
         CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
 
@@ -443,7 +443,8 @@ public class VideoCamera extends ActivityBase
                     CameraSettings.KEY_VIDEO_TIME_LAPSE_FRAME_INTERVAL,
                     CameraSettings.KEY_VIDEO_QUALITY};
         final String[] OTHER_SETTING_KEYS = {
-                    CameraSettings.KEY_RECORD_LOCATION};
+                    CameraSettings.KEY_RECORD_LOCATION,
+                    CameraSettings.KEY_POWER_SHUTTER};
 
         CameraPicker.setImageResourceId(R.drawable.ic_switch_video_facing_holo_light);
         mIndicatorControlContainer.initialize(this, mPreferenceGroup,
@@ -713,12 +714,16 @@ public class VideoCamera extends ActivityBase
 
     private void getDesiredPreviewSize() {
         mParameters = mCameraDevice.getParameters();
-        if (mParameters.getSupportedVideoSizes() == null || effectsActive()) {
+        if (mParameters.getSupportedVideoSizes() == null ||
+                (!getResources().getBoolean(R.bool.alwaysUsePreferredPreviewSize) && effectsActive())) {
             mDesiredPreviewWidth = mProfile.videoFrameWidth;
             mDesiredPreviewHeight = mProfile.videoFrameHeight;
         } else {  // Driver supports separates outputs for preview and video.
             List<Size> sizes = mParameters.getSupportedPreviewSizes();
             Size preferred = mParameters.getPreferredPreviewSizeForVideo();
+            if (preferred == null) {
+                preferred = sizes.get(0);
+            }
             int product = preferred.width * preferred.height;
             Iterator<Size> it = sizes.iterator();
             // Remove the preview sizes that are not preferred.
@@ -1035,6 +1040,11 @@ public class VideoCamera extends ActivityBase
         switch (keyCode) {
             case KeyEvent.KEYCODE_CAMERA:
                 mShutterButton.setPressed(false);
+                return true;
+            case KeyEvent.KEYCODE_POWER:
+                if (powerShutter(mPreferences)) {
+                    onShutterButtonClick();
+                }
                 return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -1776,8 +1786,15 @@ public class VideoCamera extends ActivityBase
         return supported == null ? false : supported.indexOf(value) >= 0;
     }
 
-    @SuppressWarnings("deprecation")
     private void setCameraParameters() {
+        mParameters = mCameraDevice.getParameters();
+
+        // Set video mode
+        CameraSettings.setVideoMode(mParameters, true);
+
+        // Set video size before recording starts
+        CameraSettings.setEarlyVideoSize(mParameters, mProfile);
+
         mParameters.setPreviewSize(mDesiredPreviewWidth, mDesiredPreviewHeight);
         mParameters.setPreviewFrameRate(mProfile.videoFrameRate);
 
@@ -1854,6 +1871,7 @@ public class VideoCamera extends ActivityBase
                 CameraProfile.QUALITY_HIGH);
         mParameters.setJpegQuality(jpegQuality);
 
+        CameraSettings.dumpParameters(mParameters);
         mCameraDevice.setParameters(mParameters);
         // Keep preview size up to date.
         mParameters = mCameraDevice.getParameters();
@@ -2368,6 +2386,7 @@ public class VideoCamera extends ActivityBase
         mParameters.setRotation(rotation);
         Location loc = mLocationManager.getCurrentLocation();
         Util.setGpsParameters(mParameters, loc);
+        CameraSettings.dumpParameters(mParameters);
         mCameraDevice.setParameters(mParameters);
 
         Log.v(TAG, "Video snapshot start");

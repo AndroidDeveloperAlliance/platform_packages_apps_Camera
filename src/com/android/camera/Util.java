@@ -77,6 +77,23 @@ public class Util {
     private static float sPixelDensity = 1;
     private static ImageFileNamer sImageFileNamer;
 
+    // For setting video size before recording starts
+    private static boolean sEarlyVideoSize;
+
+    // Samsung camcorder mode
+    private static boolean sSamsungCamMode;
+    private static boolean sSamsungCamSettings;
+    
+    // HTC camcorder mode
+    private static boolean sHTCCamMode;
+
+    // Samsung ZSL mode
+    private static boolean sEnableZSL;
+
+    // Workaround for QC cameras with broken face detection on front camera
+    private static boolean sNoFaceDetectOnFrontCamera;
+    private static boolean sNoFaceDetectOnRearCamera;
+    
     private Util() {
     }
 
@@ -88,6 +105,33 @@ public class Util {
         sPixelDensity = metrics.density;
         sImageFileNamer = new ImageFileNamer(
                 context.getString(R.string.image_file_name_format));
+
+        // These come from the config, but are needed before parameters are set.
+        sEarlyVideoSize = context.getResources().getBoolean(R.bool.needsEarlyVideoSize);
+        sSamsungCamMode = context.getResources().getBoolean(R.bool.needsSamsungCamMode);
+        sSamsungCamSettings = context.getResources().getBoolean(R.bool.hasSamsungCamSettings);
+        sHTCCamMode = context.getResources().getBoolean(R.bool.needsHTCCamMode);
+        sEnableZSL = context.getResources().getBoolean(R.bool.enableZSL);
+        sNoFaceDetectOnFrontCamera = context.getResources().getBoolean(
+                R.bool.noFaceDetectOnFrontCamera);
+        sNoFaceDetectOnRearCamera = context.getResources().getBoolean(
+                R.bool.noFaceDetectOnRearCamera);
+    }
+
+    public static boolean needsEarlyVideoSize() {
+        return sEarlyVideoSize;
+    }
+
+    public static boolean useHTCCamMode() {
+        return sHTCCamMode;
+    }
+
+    public static boolean useSamsungCamMode() {
+        return sSamsungCamMode;
+    }
+
+    public static boolean useSamsungCamSettings() {
+        return sSamsungCamSettings;
     }
 
     public static int dpToPixel(int dp) {
@@ -98,6 +142,18 @@ public class Util {
     // If a new bitmap is created, the original bitmap is recycled.
     public static Bitmap rotate(Bitmap b, int degrees) {
         return rotateAndMirror(b, degrees, false);
+    }
+
+    public static boolean enableZSL() {
+        return sEnableZSL;
+    }
+
+    public static boolean noFaceDetectOnFrontCamera() {
+        return sNoFaceDetectOnFrontCamera;
+    }
+
+    public static boolean noFaceDetectOnRearCamera() {
+        return sNoFaceDetectOnRearCamera;
     }
 
     // Rotates and/or mirrors the bitmap. If a new bitmap is created, the
